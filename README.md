@@ -1,4 +1,3 @@
-````markdown
 # Django Reusable Template
 
 A collection of reusable, modular components and integrations for Django projects.
