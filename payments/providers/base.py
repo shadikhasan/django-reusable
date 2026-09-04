@@ -17,7 +17,6 @@ class PaymentProvider(ABC):
 
         Args:
             amount: Payment amount in the smallest currency unit.
-                For example, 1000 represents $10.00 for USD.
             currency: Three-letter ISO 4217 currency code.
             **kwargs: Provider-specific options.
 
@@ -32,7 +31,7 @@ class PaymentProvider(ABC):
         Retrieve a payment.
 
         Args:
-            payment_id: Provider payment identifier.
+            payment_id: Provider payment or order identifier.
 
         Returns:
             Provider-specific payment information.
@@ -40,26 +39,16 @@ class PaymentProvider(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def capture_payment(self, payment_id: str, **kwargs: Any) -> Any:
+    def capture_payment(
+        self,
+        payment_id: str,
+        **kwargs: Any,
+    ) -> Any:
         """
-        Capture an authorized payment.
+        Capture a payment.
 
         Args:
-            payment_id: Provider payment identifier.
-            **kwargs: Provider-specific options.
-
-        Returns:
-            Provider-specific payment information.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def cancel_payment(self, payment_id: str, **kwargs: Any) -> Any:
-        """
-        Cancel an authorized payment.
-
-        Args:
-            payment_id: Provider payment identifier.
+            payment_id: Provider payment or order identifier.
             **kwargs: Provider-specific options.
 
         Returns:
@@ -72,15 +61,18 @@ class PaymentProvider(ABC):
         self,
         payment_id: str,
         amount: int | None = None,
+        currency: str | None = None,
         **kwargs: Any,
     ) -> Any:
         """
         Refund a payment.
 
         Args:
-            payment_id: Provider payment identifier.
+            payment_id: Provider-specific payment or capture identifier.
             amount: Optional refund amount in the smallest currency unit.
-                If omitted, the full payment amount is refunded.
+                If omitted, the full remaining amount is refunded.
+            currency: Three-letter ISO 4217 currency code. Required when
+                a partial refund amount is provided.
             **kwargs: Provider-specific options.
 
         Returns:

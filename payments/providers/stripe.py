@@ -68,30 +68,11 @@ class StripeProvider(PaymentProvider):
             **kwargs,
         )
 
-    def cancel_payment(
-        self,
-        payment_id: str,
-        **kwargs: Any,
-    ) -> Any:
-        """
-        Cancel an authorized Stripe payment.
-
-        Args:
-            payment_id: Stripe PaymentIntent identifier.
-            **kwargs: Additional Stripe cancellation options.
-
-        Returns:
-            Stripe PaymentIntent object.
-        """
-        return stripe.PaymentIntent.cancel(
-            payment_id,
-            **kwargs,
-        )
-
     def refund_payment(
         self,
         payment_id: str,
         amount: int | None = None,
+        currency: str | None = None,
         **kwargs: Any,
     ) -> Any:
         """
@@ -100,7 +81,9 @@ class StripeProvider(PaymentProvider):
         Args:
             payment_id: Stripe PaymentIntent identifier.
             amount: Optional refund amount in the smallest currency unit.
-                If omitted, the full payment is refunded.
+                If omitted, the full remaining amount is refunded.
+            currency: Three-letter ISO 4217 currency code. Stripe determines
+                the currency from the payment, so this is not required.
             **kwargs: Additional Stripe refund options.
 
         Returns:

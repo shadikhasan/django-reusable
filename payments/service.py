@@ -86,6 +86,7 @@ class PaymentService:
         self,
         payment_id: str,
         amount: int | None = None,
+        currency: str | None = None,
         **kwargs: Any,
     ) -> Any:
         """
@@ -94,6 +95,9 @@ class PaymentService:
         Args:
             payment_id: Provider payment or capture identifier.
             amount: Optional refund amount in the smallest currency unit.
+                If omitted, the full remaining amount is refunded.
+            currency: Three-letter ISO 4217 currency code. Required for
+                partial refunds when supported by the provider.
             **kwargs: Provider-specific options.
 
         Returns:
@@ -102,5 +106,6 @@ class PaymentService:
         return self.provider.refund_payment(
             payment_id=payment_id,
             amount=amount,
+            currency=currency,
             **kwargs,
         )

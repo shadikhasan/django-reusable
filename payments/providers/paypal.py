@@ -4,9 +4,10 @@ from django.conf import settings
 from paypalcheckoutsdk.core import PayPalHttpClient, SandboxEnvironment
 from paypalcheckoutsdk.orders import (
     OrdersCaptureRequest,
-    OrdersGetRequest,
     OrdersCreateRequest,
+    OrdersGetRequest,
 )
+from paypalcheckoutsdk.payments import CapturesRefundRequest
 
 from .base import PaymentProvider
 
@@ -97,42 +98,48 @@ class PayPalProvider(PaymentProvider):
 
         return self.client.execute(request).result
 
-    def cancel_payment(
-        self,
-        payment_id: str,
-        **kwargs: Any,
-    ) -> Any:
-        """
-        Cancel an authorized PayPal payment.
-
-        Args:
-            payment_id: PayPal order identifier.
-            **kwargs: Additional PayPal cancellation options.
-
-        Returns:
-            PayPal order response.
-        """
-        raise NotImplementedError(
-            "PayPal order cancellation depends on the authorization flow."
-        )
-
     def refund_payment(
         self,
         payment_id: str,
         amount: int | None = None,
+        currency: str | None = None,
         **kwargs: Any,
     ) -> Any:
         """
-        Refund a PayPal payment.
+        Refund a captured PayPal payment.
 
         Args:
             payment_id: PayPal capture identifier.
             amount: Optional refund amount in the smallest currency unit.
+                If omitted, the full captured payment is refunded.
+            currency: Three-letter ISO 4217 currency code. Required when
+                a partial refund amount is provided.
             **kwargs: Additional PayPal refund options.
 
         Returns:
             PayPal refund response.
+
+        Raises:
+            ValueError: If a partial refund is requested without currency.
         """
-        raise NotImplementedError(
-            "PayPal refunds require the capture ID, not the order ID."
-        )
+        if amount is not None and currency is None:
+            raise ValueError(
+                "Currency is required for a partial PayPal refund."
+            )
+
+        request = CapturesRefundRequest(payment_id)
+
+        if amount is not None or kwargs:
+            body = {
+                **kwargs,
+            }
+
+            if amount is not None:
+                body["amount"] = {
+                    "value": f"{amount / 100:.2f}",
+                    "currency_code": currency.upper(),
+                }
+
+            request.request_body(body)
+
+        return self.client.execute(request).result
