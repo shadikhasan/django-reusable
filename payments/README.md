@@ -1,4 +1,3 @@
-````markdown
 # **Django Payments Module**
 
 A reusable payment module for Django projects with support for multiple payment providers through a common interface.
